@@ -1,0 +1,6 @@
+post:
+  host: localhost
+  port: 3306
+  user: tester
+  password: 123456
+  log: post.db.log
