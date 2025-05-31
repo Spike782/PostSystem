@@ -4,6 +4,7 @@ import (
 	"PostSystem/util"
 	"fmt"
 	"log"
+	"log/slog"
 	"os"
 	"path"
 	"time"
@@ -60,4 +61,19 @@ func CreateConnection(confDir, confFile, fileType, logDir string) {
 	//一个连接最多可使用这么长时间，超时后连接会自动关闭（因为数据库本身可能也对NoActive连接设置了超时时间，我们的应对办法：定期ping，或者SetConnMaxLifetime）
 	sqlDB.SetConnMaxLifetime(time.Hour)
 	PostDB = db
+}
+
+func PingPostDB() {
+	if PostDB != nil {
+		sqlDB, _ := PostDB.DB()
+		sqlDB.Ping()
+		slog.Info("ping post db")
+	}
+}
+
+func ClosePostDB() {
+	if PostDB != nil {
+		sqlDB, _ := PostDB.DB()
+		sqlDB.Close()
+	}
 }

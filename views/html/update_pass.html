@@ -1,0 +1,81 @@
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/md5.js"></script>
+    <title>修改密码</title>
+    <style>
+        .center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+
+<body>
+    <span id="user_name" style="position: absolute;right: 2%;"></span>
+    <div class="center">
+        <form id="updatePassForm">
+            <table>
+                <tr>
+                    <td>旧密码</td>
+                    <td><input id="old_pass" name="old_pass" type="password" size="20" /></td>
+                </tr>
+                <tr>
+                    <td>新密码</td>
+                    <td><input id="new_pass" name="new_pass" type="password" size="20" /></td>
+                </tr>
+                <tr>
+                    <td align="center"><button type="submit">修改密码</button> </td>
+                    <td align="right"><a href="/login">去登录</a></td>
+                </tr>
+            </table>
+        </form>
+        <span id="msg" style="color: red;"></span>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $.ajax({
+                url: "/user",
+                method: "get",
+                success: function (result) {
+                    $('#user_name').html(result.Name);
+                }
+            })
+            $('#updatePassForm').submit(function (event) {
+                event.preventDefault();    //阻止form的默认行为（即form里的内容会拼在url里发起Get请求，这样原始密码就暴露了）
+                const form = document.querySelector("#updatePassForm");
+                var formData = new FormData(form);
+                var oldpass = $.trim(formData.get("old_pass"));   //取得用户输入的原始密码
+                var newpass = $.trim(formData.get("new_pass"));
+                if (oldpass == newpass) {
+                    alert("密码没有变化");
+                    return;
+                }
+                var digest = CryptoJS.MD5(oldpass).toString(CryptoJS.enc.Hex);
+                formData.set("old_pass", digest);   //直接在客户端对密码执行哈希
+
+                var digest = CryptoJS.MD5(newpass).toString(CryptoJS.enc.Hex);
+                formData.set("new_pass", digest);
+                $.ajax({
+                    url: "/modify_pass/submit",
+                    data: formData,
+                    method: 'post',
+                    processData: false,
+                    contentType: false,
+                    enctype: 'multipart/form-data',
+                    success: function (result) {
+                        alert("密码修改成功");
+                        // 密码修改成功后重定向到登录页面
+                        window.location.href = "/login";
+                    }
+                }).fail(function (result, result1, result2) {
+                    $('#msg').html(result.responseText);
+                });
+            });
+        }); 
+    </script>
+</body>

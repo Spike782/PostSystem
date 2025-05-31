@@ -44,7 +44,7 @@ func LogOffUser(uid int) error {
 func UpdatePassword(uid int, oldPass, newPass string) error {
 	tx := PostDB.Model(&model.User{}).Where("id=? and password=?", uid, oldPass).Update("password", newPass)
 	if tx.Error != nil {
-		slog.Error("Update password failed", uid, "error", tx.Error)
+		slog.Error("Update password failed", "id:%d", uid, "error", tx.Error)
 		return errors.New("密码修改失败，请稍后重试")
 	} else {
 		if tx.RowsAffected == 0 {

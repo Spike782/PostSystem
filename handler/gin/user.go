@@ -6,6 +6,7 @@ import (
 	"PostSystem/util"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"strconv"
 )
 
 func ReigistUser(ctx *gin.Context) {
@@ -38,6 +39,13 @@ func Login(ctx *gin.Context) {
 		ctx.String(http.StatusBadRequest, "密码错误")
 		return
 	}
+
+	//返回cookie
+	ctx.SetCookie("uid", strconv.Itoa(user2.Id), 86400, "/", "localhost", false, true)
+}
+
+func Logout(ctx *gin.Context) {
+	ctx.SetCookie("uid", "", -1, "/", "localhost", false, true)
 }
 
 func UpdatePassword(ctx *gin.Context) {
@@ -47,9 +55,26 @@ func UpdatePassword(ctx *gin.Context) {
 		ctx.String(http.StatusBadRequest, util.BindErrMsg(err))
 		return
 	}
-	err = database.UpdatePassword(req.Uid, req.OldPass, req.NewPass)
+	uid := GetUidFromCookie(ctx)
+	if uid <= 0 {
+		ctx.String(http.StatusForbidden, "请先登录！")
+		return
+	}
+	err = database.UpdatePassword(uid, req.OldPass, req.NewPass)
 	if err != nil {
 		ctx.String(http.StatusBadRequest, err.Error())
 		return
 	}
+}
+
+func GetUidFromCookie(ctx *gin.Context) int {
+	for _, cookie := range ctx.Request.Cookies() {
+		if cookie.Name == "uid" {
+			uid, err := strconv.Atoi(cookie.Value)
+			if err != nil {
+				return uid
+			}
+		}
+	}
+	return 0
 }

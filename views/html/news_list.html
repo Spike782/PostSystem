@@ -1,0 +1,88 @@
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="/js/my.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+    <title>新闻</title>
+</head>
+
+<body>
+    <span style="position: absolute;left: 2%;">
+        <a id="issue_bnt" style="display: none;" onclick="issueNews();">发表</a>
+    </span>
+    <span style="position: absolute;right: 2%;">
+        <a href="/login" id="login">登录</a>
+        <a href="/modify_pass" onclick="" id="user_name"></a>
+        <a id="log_out" style="display: none;" onclick="logout();">退出</a>
+    </span>
+    <span style="display: none;"><input id="page_no" value="{{.page}}"></input></span>
+    <div align="center" style="display: block; width: 80%; margin: auto;">
+        <span id="list">
+            <table>
+                <tr bgcolor="#FA9862">
+                    <th width="50%">标题</th>
+                    <th width="20%">作者</th>
+                    <th width="30%">发布时间</th>
+                </tr>
+                {{range .data}}
+                <tr>
+                    <td style="padding-top: 10;"><a href="/news/{{.Id}}">{{.Title}}</a></td>
+                    <td>{{.UserName}}</td>
+                    <td>{{.ViewPostTime}}</td>
+                </tr>
+                {{end}}
+                <tr>
+                    <td colspan="2" align="right">
+                        <a onclick="prev_page();">&lt;</a>
+                        {{.page}}
+                        <a onclick="next_page();">&gt;</a>
+                    </td>
+                    <td align="right">共{{.total}}篇</td>
+                </tr>
+            </table>
+        </span>
+    </div>
+    <script>
+        function next_page() {
+            var pageNo = document.querySelector("#page_no").value;
+            var url = "/news?page_size=3&page_no=" + (parseInt(pageNo) + 1).toString();
+            window.location.assign(url);
+        };
+        function prev_page() {
+            var pageNo = document.querySelector("#page_no").value;
+            if (parseInt(pageNo) > 1) {
+                var url = "/news?page_size=3&page_no=" + (parseInt(pageNo) - 1).toString();
+                window.location.assign(url);
+            }
+        };
+        function issueNews() {
+            window.location.href = "/news/issue";
+        }
+        function logout() {
+            //方案一:前端删除jwt这个cookie, 把expires设为过去的一个时间。这么做的前提是HttpOnly必须为false
+            // document.cookie = "jwt=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=localhost;";
+            // show_login();
+            //方案二:通过后端删除Cookie
+            $.ajax({
+                url: "/logout",
+                method: "get",
+                success: function (result) {
+                    show_login();
+                }
+            })
+        };
+        $(document).ready(function () {
+            $.ajax({
+                url: "/user",
+                method: "get",
+                success: function (result) {
+                    if (result.Name) {
+                        show_out(result.Name);
+                    }
+                }
+            })
+        }); 
+    </script>
+</body>

@@ -1,0 +1,111 @@
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="/js/my.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/my.css">
+    <title>{{.Title}}</title>
+</head>
+
+<body>
+    <span style="position: absolute;left: 2%;">
+        <a id="delete_bnt" style="display: none;" onclick="deleteNews();">删除</a>
+        <a id="edit_bnt" style="display: none;" onclick="edit();">修改</a>
+        <a href="/news">返回列表页</a>
+    </span>
+
+    <span style="position: absolute;right: 2%;">
+        <a href="/login" id="login">登录</a>
+        <a href="/modify_pass" onclick="" id="user_name"></a>
+        <a id="log_out" style="display: none;" onclick="logout();">退出</a>
+    </span>
+
+    <span style="display: none;"><input id="id" value="{{.Id}}"></input></span>
+    <div id="view" align="center" style="display: block; width: 50%; margin: auto;">
+        <span id="title" style="width: 100%;">{{.Title}}</span><br>
+        <hr><br>
+        <div id="article" style="white-space: pre-wrap; text-align: left;">{{.Content}}</div><!-- 这个style是为了把\n转为换行 -->
+        <br>{{.UserName}}&nbsp;创建于&nbsp;{{.ViewPostTime}}
+    </div>
+    <div id="update" align="center" style="display: none; width: 50%; margin: auto;">
+        <input type="text" id="edit_title" style="width: 100%;" name="edit_title" value="{{.Title}}"></input><br>
+        <hr><br>
+        <textarea id="edit_article" name="edit_article" rows="15" style="width: 100%;">{{.Content}}</textarea><br><br>
+        <button id="update_bnt" onclick="update();">提交</button><br>
+        <span id="msg" style="color: red;"></span>
+    </div>
+    <script>
+        function edit() {
+            document.querySelector("#view").style.display = 'none';
+            document.querySelector("#update").style.display = 'block';
+        };
+        function deleteNews() {
+            var id = document.querySelector("#id").value;
+            $.ajax({
+                type: "GET",
+                url: "/news/delete/" + id,
+                success: function (result) {
+                    window.location.replace("/news");  //跳转到新闻列表页
+                },
+            }).fail(function (result, result1, result2) {
+                alert(result.responseText);
+            });
+
+        };
+        function update() {
+            var title = document.querySelector("#edit_title").value;
+            var article = document.querySelector("#edit_article").value;
+            var id = document.querySelector("#id").value;
+            $.ajax({
+                type: "POST",
+                url: "/news/update",
+                data: { "title": title, "content": article, "id": id },
+                success: function (result) {
+                    window.location.replace("/news/" + id);  //跳转到新闻详情页
+                },
+            }).fail(function (result, result1, result2) {
+                $('#msg').html(result.responseText);
+            });
+        };
+        function logout() {
+            //方案一:前端删除jwt这个cookie, 把expires设为过去的一个时间。这么做的前提是HttpOnly必须为false
+            // document.cookie = "jwt=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=localhost;";
+            // show_login();
+            //方案二:通过后端删除Cookie
+            $.ajax({
+                url: "/logout",
+                method: "get",
+                success: function (result) {
+                    show_login();
+                }
+            })
+        };
+        // 客户端从sessionStorage里获取auth_token，拿auth_token和bid询问服务端当前用户是不是作者本人
+        $(document).ready(function () {//页面加载完成后执行
+            var id = document.querySelector("#id").value;
+            $.ajax({
+                type: "GET",
+                url: "/news/belong",
+                data: { "id": id },
+                success: function (result) {
+                    if ("true" == result) {
+                        document.querySelector("#edit_bnt").style.display = 'block';
+                        document.querySelector("#delete_bnt").style.display = 'block';
+                    }
+                }
+            }).fail(function (result, result1, result2) {
+            });
+
+            $.ajax({
+                url: "/user",
+                method: "get",
+                success: function (result) {
+                    if (result.Name) {
+                        show_out(result.Name);
+                    }
+                }
+            })
+        });
+    </script>
+</body>

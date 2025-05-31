@@ -1,0 +1,65 @@
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <script src="http://code.jquery.com/jquery-latest.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/md5.js"></script>
+    <title>注册</title>
+    <style>
+        .center {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="center">
+        <form id="registForm">
+            <table>
+                <tr>
+                    <td>用户名</td>
+                    <td><input id="user" name="name" type="text" size="20" autofocus /></td>
+                </tr>
+                <tr>
+                    <td>密码</td>
+                    <td><input id="pass" name="pass" type="password" size="20" /></td>
+                </tr>
+                <tr>
+                    <td align="center"><button type="submit">注册 </button> </td>
+                    <td align="right"><a href="/login">去登录</a></td>
+                </tr>
+            </table>
+        </form>
+        <span id="msg" style="color: red;"></span>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $('#registForm').submit(function (event) {
+                event.preventDefault();    //阻止form的默认行为（即form里的内容会拼在url里发起Get请求，这样原始密码就暴露了）
+                const form = document.querySelector("#registForm");
+                var formData = new FormData(form);
+                formData.set("name", $.trim(formData.get("name"))); //把前后的空格去掉
+                var pass = $.trim(formData.get("pass"));   //取得用户输入的原始密码
+                var digest = CryptoJS.MD5(pass).toString(CryptoJS.enc.Hex);//直接在客户端对密码执行哈希
+                formData.set("pass", digest);
+                $.ajax({
+                    url: "/regist/submit",
+                    data: formData,
+                    method: 'post',
+                    processData: false,
+                    contentType: false,
+                    enctype: 'multipart/form-data',
+                    success: function (result) {
+                        // 注册成功后重定向到登录页面
+                        window.location.href = "/login";
+                    }
+                }).fail(function (result, result1, result2) {
+                    $('#msg').html(result.responseText);
+                });
+            });
+        }); 
+    </script>
+</body>

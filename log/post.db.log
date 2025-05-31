@@ -1,0 +1,3 @@
+
+2025/05/29 21:54:52 D:/Goprojects/PostSystem/database/gorm/user.go:17
+[2.582ms] [rows:1] INSERT INTO `user` (`name`,`password`) VALUES ('xiaoming','e10adc3949ba59abbe56e057f20f883e')

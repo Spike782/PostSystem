@@ -1,25 +1,54 @@
 package main
 
 import (
-  "fmt"
+	database "PostSystem/database/gorm"
+	"PostSystem/util"
+	"github.com/gin-gonic/gin"
+	"github.com/robfig/cron/v3"
+	"log/slog"
+	"os"
+	"os/signal"
+	"syscall"
 )
 
-//TIP To run your code, right-click the code and select <b>Run</b>. Alternatively, click
-// the <icon src="AllIcons.Actions.Execute"/> icon in the gutter and select the <b>Run</b> menu item from here.
-
-func main() {
-  //TIP Press <shortcut actionId="ShowIntentionActions"/> when your caret is at the underlined or highlighted text
-  // to see how GoLand suggests fixing it.
-  s := "gopher"
-  fmt.Println("Hello and welcome, %s!", s)
-
-  for i := 1; i <= 5; i++ {
-	//TIP You can try debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-	// for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>. To start your debugging session, 
-	// right-click your code in the editor and select the <b>Debug</b> option. 
-	fmt.Println("i =", 100/i)
-  }
+func Init() {
+	util.InitSlog("./log/post.log")
+	database.CreateConnection("./conf", "db", util.YAML, "./log")
+	crontab := cron.New()
+	crontab.AddFunc("*/5 * * * *", database.PingPostDB) //分时日月周
+	crontab.Start()
 }
 
-//TIP See GoLand help at <a href="https://www.jetbrains.com/help/go/">jetbrains.com/help/go/</a>.
-// Also, you can try interactive lessons for GoLand by selecting 'Help | Learn IDE Features' from the main menu.
+func ListenTermSignal() {
+	c := make(chan os.Signal, 1)
+	signal.Notify(c, syscall.SIGINT, syscall.SIGTERM)
+	sig := <-c
+	slog.Info("receive a signal:", sig.String()+",going to shutdown...")
+	database.ClosePostDB()
+	os.Exit(0)
+}
+
+func main() {
+	Init()
+
+	go ListenTermSignal()
+	engine := gin.Default()
+	engine.Static("/js", "views/js")
+	engine.Static("/css", "views/css")
+	engine.StaticFile("/favicon.ico", "views/img/spike.jpg")
+	engine.LoadHTMLGlob("./views/html/*")
+	engine.GET("/login", func(c *gin.Context) {
+		c.HTML(200, "login.html", nil)
+	})
+	engine.GET("/regist", func(c *gin.Context) {
+		c.HTML(200, "user_regist.html", nil)
+	})
+	engine.GET("/modify_pass", func(c *gin.Context) {
+		c.HTML(200, "update_pass.html", nil)
+	})
+	engine.GET("logout", func(c *gin.Context) {
+		c.HTML(200, "logout.html", nil)
+	})
+
+	engine.Run("localhost:8080")
+}
