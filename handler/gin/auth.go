@@ -14,7 +14,7 @@ const (
 )
 
 var (
-	KeyConfig = util.InitViper("post/conf", "jwt", util.YAML)
+	KeyConfig = util.InitViper("./conf", "jwt", util.YAML)
 )
 
 // 从cookie里取出jwt，从而取出uid

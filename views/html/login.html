@@ -44,7 +44,8 @@
                 formData.set("name", $.trim(formData.get("name"))); //把前后的空格去掉
                 var pass = $.trim(formData.get("pass"));   //取得用户输入的原始密码
                 var digest = CryptoJS.MD5(pass).toString(CryptoJS.enc.Hex);//直接在客户端对密码执行哈希
-                formData.set("pass", digest);
+                formData.delete("pass");
+                formData.set("password", digest);
                 $.ajax({
                     url: "/login/submit",
                     data: formData,

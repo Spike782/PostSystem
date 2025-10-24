@@ -1,7 +1,7 @@
 -- 创建数据库（如果不存在）
 CREATE DATABASE IF NOT EXISTS post;
 
--- 创建用户（MySQL 8.0 推荐做法）
+-- 创建用户
 CREATE USER IF NOT EXISTS 'tester'@'localhost' IDENTIFIED BY '123456';
 
 -- 授权用户访问 post 数据库
