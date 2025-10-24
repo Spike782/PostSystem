@@ -55,6 +55,7 @@ func main() {
 	engine.POST("/update", handler.Auth, handler.UpdateNews)
 
 	engine.GET("", func(ctx *gin.Context) { ctx.Redirect(http.StatusMovedPermanently, "news") }) //新闻列表页是默认的首页
+	engine.GET("/news", handler.NewsList)
 
 	engine.Run("localhost:8080")
 }
