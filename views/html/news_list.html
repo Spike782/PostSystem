@@ -1,5 +1,4 @@
 <html lang="en">
-
 <head>
     <meta charset="utf-8" />
     <script src="http://code.jquery.com/jquery-latest.js"></script>
@@ -9,16 +8,22 @@
 </head>
 
 <body>
-    <span style="position: absolute;left: 2%;">
+<!-- 显示发布新闻按钮，初始时隐藏 -->
+<span style="position: absolute;left: 2%;">
         <a id="issue_bnt" style="display: none;" onclick="issueNews();">发表</a>
     </span>
-    <span style="position: absolute;right: 2%;">
-        <a href="/login" id="login">登录</a>
-        <a href="/modify_pass" onclick="" id="user_name"></a>
+
+<!-- 右上角用户信息 -->
+<span style="position: absolute;right: 2%;">
+        <a href="/login" id="login" style="display: none;">登录</a>
+        <a href="/modify_pass" onclick="" id="user_name" style="display: none;"></a> <!-- 用户名 -->
         <a id="log_out" style="display: none;" onclick="logout();">退出</a>
     </span>
-    <span style="display: none;"><input id="page_no" value="{{.page}}"></input></span>
-    <div align="center" style="display: block; width: 80%; margin: auto;">
+
+<span style="display: none;"><input id="page_no" value="{{.page}}"></input></span>
+
+<!-- 新闻列表展示 -->
+<div align="center" style="display: block; width: 80%; margin: auto;">
         <span id="list">
             <table>
                 <tr bgcolor="#FA9862">
@@ -43,46 +48,66 @@
                 </tr>
             </table>
         </span>
-    </div>
-    <script>
-        function next_page() {
-            var pageNo = document.querySelector("#page_no").value;
-            var url = "/news?page_size=3&page_no=" + (parseInt(pageNo) + 1).toString();
+</div>
+
+<script>
+    // 下一页
+    function next_page() {
+        var pageNo = document.querySelector("#page_no").value;
+        var url = "/news?page_size=3&page_no=" + (parseInt(pageNo) + 1).toString();
+        window.location.assign(url);
+    };
+
+    // 上一页
+    function prev_page() {
+        var pageNo = document.querySelector("#page_no").value;
+        if (parseInt(pageNo) > 1) {
+            var url = "/news?page_size=3&page_no=" + (parseInt(pageNo) - 1).toString();
             window.location.assign(url);
-        };
-        function prev_page() {
-            var pageNo = document.querySelector("#page_no").value;
-            if (parseInt(pageNo) > 1) {
-                var url = "/news?page_size=3&page_no=" + (parseInt(pageNo) - 1).toString();
-                window.location.assign(url);
-            }
-        };
-        function issueNews() {
-            window.location.href = "/news/issue";
         }
-        function logout() {
-            //方案一:前端删除jwt这个cookie, 把expires设为过去的一个时间。这么做的前提是HttpOnly必须为false
-            // document.cookie = "jwt=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=localhost;";
-            // show_login();
-            //方案二:通过后端删除Cookie
-            $.ajax({
-                url: "/logout",
-                method: "get",
-                success: function (result) {
-                    show_login();
+    };
+
+    // 发布新闻
+    function issueNews() {
+        window.location.href = "/news/issue";
+    }
+
+    // 退出登录
+    function logout() {
+        $.ajax({
+            url: "/logout",
+            method: "GET",
+            success: function (result) {
+                show_login();  // 注销后调用显示登录函数
+            }
+        });
+    };
+
+    // 页面加载完成后检查用户登录状态
+    $(document).ready(function () {
+        $.ajax({
+            url: "/user",  // 请求当前用户信息
+            method: "GET",
+            success: function (result) {
+                if (result.Name) {  // 如果用户已登录
+                    show_out(result.Name);  // 显示用户名
+                    // 显示“发布新闻”按钮和“退出”按钮
+                    document.querySelector("#issue_bnt").style.display = "inline";
+                    document.querySelector("#user_name").innerText = result.Name;
+                    document.querySelector("#user_name").style.display = "inline";
+                    document.querySelector("#login").style.display = "none";
+                    document.querySelector("#log_out").style.display = "inline";
                 }
-            })
-        };
-        $(document).ready(function () {
-            $.ajax({
-                url: "/user",
-                method: "get",
-                success: function (result) {
-                    if (result.Name) {
-                        show_out(result.Name);
-                    }
-                }
-            })
-        }); 
-    </script>
+            },
+            fail: function () {
+                // 未登录时显示登录按钮
+                document.querySelector("#login").style.display = "inline";
+                document.querySelector("#user_name").style.display = "none";
+                document.querySelector("#log_out").style.display = "none";
+                document.querySelector("#issue_bnt").style.display = "none";
+            }
+        });
+    });
+</script>
 </body>
+</html>

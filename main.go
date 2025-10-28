@@ -46,6 +46,7 @@ func main() {
 	engine.POST("regist/submit", handler.ReigistUser)
 	engine.GET("/modify_pass", func(c *gin.Context) { c.HTML(200, "update_pass.html", nil) })
 	engine.GET("logout", func(c *gin.Context) { c.HTML(200, "logout.html", nil) })
+	engine.GET("/user", handler.GetCurrentUser)
 
 	engine.GET("/issue", func(ctx *gin.Context) { ctx.HTML(http.StatusOK, "news_issue.html", nil) })
 	engine.POST("/issue/submit", handler.Auth, handler.PostNews)

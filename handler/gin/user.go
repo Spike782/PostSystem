@@ -39,7 +39,7 @@ func Login(ctx *gin.Context) {
 		ctx.String(http.StatusBadRequest, "密码错误")
 		return
 	}
-
+	ctx.Set("user", user2)
 	//返回cookie
 	ctx.SetCookie("uid", strconv.Itoa(user2.Id), 86400, "/", "localhost", false, true)
 }
@@ -77,4 +77,30 @@ func GetUidFromCookie(ctx *gin.Context) int {
 		}
 	}
 	return 0
+}
+
+func GetCurrentUser(ctx *gin.Context) {
+	// 从上下文中获取用户信息
+	user, exists := ctx.Get("user")
+
+	// 如果用户信息不存在，返回未登录错误
+	if !exists || user == nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{
+			"message": "未登录",
+		})
+		return
+	}
+
+	currentUser, ok := user.(*model.User)
+	if !ok {
+		ctx.JSON(http.StatusInternalServerError, gin.H{
+			"message": "用户数据类型错误",
+		})
+		return
+	}
+
+	// 返回当前用户的 Name
+	ctx.JSON(http.StatusOK, gin.H{
+		"Name": currentUser.Name,
+	})
 }
