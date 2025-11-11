@@ -24,41 +24,86 @@
     </div>
     <script>
         function issue() {
-            var title = document.querySelector("#issue_title").value;
-            var article = document.querySelector("#issue_article").value;
+            var title = document.querySelector("#issue_title").value.trim();
+            var article = document.querySelector("#issue_article").value.trim();
+            // 表单校验
+            if (!title) {
+                $('#msg').html("标题不能为空！");
+                return;
+            }
+            if (!article) {
+                $('#msg').html("内容不能为空！");
+                return;
+            }
             $.ajax({
                 type: "POST",
                 url: "/news/issue/submit",
                 data: { "title": title, "content": article },
+                xhrFields: { withCredentials: true },
+                timeout: 5000,
                 success: function (result) {
-                    window.location.replace("/news/" + result.id);  //跳转到新闻详情页
+                    window.location.replace("/news/" + result.id);
                 },
-            }).fail(function (result, result1, result2) {
-                $('#msg').html(result.responseText);
+                error: function (xhr, status, error) {
+                    if (status === "timeout") {
+                        $('#msg').html("网络超时，请检查网络后重试！");
+                    } else {
+                        $('#msg').html(xhr.responseText || "发布失败：" + error);
+                    }
+                }
             });
         };
+
         function logout() {
-            //方案一:前端删除jwt这个cookie, 把expires设为过去的一个时间。这么做的前提是HttpOnly必须为false
-            // document.cookie = "jwt=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=localhost;";
-            // show_login();
-            //方案二:通过后端删除Cookie
             $.ajax({
                 url: "/logout",
                 method: "get",
+                xhrFields: { withCredentials: true },
+                timeout: 3000,
                 success: function (result) {
                     show_login();
+                    // 清空表单和提示
+                    $("#issue_title").val("");
+                    $("#issue_article").val("");
+                    $("#msg").html("");
+                },
+                error: function () {
+                    $('#msg').html("退出失败，请重试！");
                 }
             })
         };
-        // 客户端从sessionStorage里获取auth_token，拿auth_token和bid询问服务端当前用户是不是作者本人
-        $(document).ready(function () {//页面加载完成后执行
+
+        // 补充登录/退出状态切换函数
+        function show_login() {
+            $("#login").show();
+            $("#user_name").hide();
+            $("#log_out").hide();
+            $("#user_name").html("");
+        }
+
+        function show_out(name) {
+            $("#login").hide();
+            $("#user_name").show();
+            $("#log_out").show();
+            $("#user_name").html(name);
+        }
+
+        // 页面加载时查询登录状态
+        $(document).ready(function () {
             $.ajax({
                 url: "/user",
                 method: "get",
+                xhrFields: { withCredentials: true }, // 确保携带Cookie，后端才能识别登录态
+                timeout: 3000,
                 success: function (result) {
                     if (result.Name) {
                         show_out(result.Name);
+                    } else {
+                        show_login(); // 未登录时主动切换状态（避免按钮显示异常）
                     }
+                },
+                error: function () {
+                    show_login(); // 网络异常时默认显示登录按钮
                 }
             })
         });

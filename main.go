@@ -42,17 +42,19 @@ func main() {
 
 	engine.GET("/login", func(c *gin.Context) { c.HTML(200, "login.html", nil) })
 	engine.POST("login/submit", handler.Login)
-	engine.GET("/regist", func(c *gin.Context) { c.HTML(200, "user_regist.html", nil) })
-	engine.POST("regist/submit", handler.ReigistUser)
+	engine.GET("/register", func(c *gin.Context) { c.HTML(200, "user_regist.html", nil) })
+	engine.POST("register/submit", handler.ReigistUser)
 	engine.GET("/modify_pass", func(c *gin.Context) { c.HTML(200, "update_pass.html", nil) })
+	engine.POST("/modify_pass/submit", handler.UpdatePassword)
 	engine.GET("logout", func(c *gin.Context) { c.HTML(200, "logout.html", nil) })
+	engine.GET("logout/submit", handler.Logout)
 	engine.GET("/user", handler.GetCurrentUser)
 
 	engine.GET("/issue", func(ctx *gin.Context) { ctx.HTML(http.StatusOK, "news_issue.html", nil) })
 	engine.POST("/issue/submit", handler.Auth, handler.PostNews)
-	engine.GET("/belong", handler.NewsBelong)
+	engine.GET("news/belong", handler.NewsBelong)
 	engine.GET("/:id", handler.GetNewsById)
-	engine.GET("/delete/:id", handler.Auth, handler.DeleteNews)
+	engine.DELETE("/delete/:id", handler.Auth, handler.DeleteNews)
 	engine.POST("/update", handler.Auth, handler.UpdateNews)
 
 	engine.GET("", func(ctx *gin.Context) { ctx.Redirect(http.StatusMovedPermanently, "news") }) //新闻列表页是默认的首页

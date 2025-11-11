@@ -12,7 +12,7 @@ FLUSH PRIVILEGES;
 USE post;
 
 -- 建表
-create table if not exists user(
+create table if not exists users(
     id int auto_increment comment '用户id，自增',
     name varchar(20) not null comment '用户名',
     password char(32) not null comment '密码,md5',

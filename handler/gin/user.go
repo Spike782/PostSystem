@@ -7,7 +7,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"log/slog"
 	"net/http"
-	"strconv"
 	"time"
 )
 
@@ -22,7 +21,7 @@ func ReigistUser(ctx *gin.Context) {
 		ctx.String(http.StatusBadRequest, util.BindErrMsg(err))
 		return
 	}
-	_, err = database.RegistUser(user.Name, user.PassWord)
+	_, err = database.RegisterUser(user.Name, user.PassWord)
 	if err != nil {
 		ctx.String(http.StatusBadRequest, err.Error())
 		return
@@ -45,6 +44,8 @@ func Login(ctx *gin.Context) {
 		ctx.String(http.StatusBadRequest, "密码错误")
 		return
 	}
+	slog.Info("前端传入的用户名", "name", user.Name)
+	slog.Info("登录用户ID", "id", user2.Id, "name", user2.Name)
 	ctx.Set("user", user2)
 	//返回cookie
 	header := util.DefautHeader
@@ -72,7 +73,7 @@ func Login(ctx *gin.Context) {
 }
 
 func Logout(ctx *gin.Context) {
-	ctx.SetCookie("uid", "", -1, "/", "localhost", false, true)
+	ctx.SetCookie(COOKIE_NAME, "", -1, "/", "localhost", false, true)
 }
 
 func UpdatePassword(ctx *gin.Context) {
@@ -82,7 +83,7 @@ func UpdatePassword(ctx *gin.Context) {
 		ctx.String(http.StatusBadRequest, util.BindErrMsg(err))
 		return
 	}
-	uid := GetUidFromCookie(ctx)
+	uid := GetLoginUid(ctx)
 	if uid <= 0 {
 		ctx.String(http.StatusForbidden, "请先登录！")
 		return
@@ -94,40 +95,18 @@ func UpdatePassword(ctx *gin.Context) {
 	}
 }
 
-func GetUidFromCookie(ctx *gin.Context) int {
-	for _, cookie := range ctx.Request.Cookies() {
-		if cookie.Name == "uid" {
-			uid, err := strconv.Atoi(cookie.Value)
-			if err != nil {
-				return uid
-			}
-		}
-	}
-	return 0
-}
-
 func GetCurrentUser(ctx *gin.Context) {
-	// 从上下文中获取用户信息
-	user, exists := ctx.Get("user")
-
-	// 如果用户信息不存在，返回未登录错误
-	if !exists || user == nil {
-		ctx.JSON(http.StatusUnauthorized, gin.H{
-			"message": "未登录",
-		})
+	uid := GetLoginUid(ctx)
+	if uid <= 0 {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "未登录"})
 		return
 	}
 
-	currentUser, ok := user.(*model.User)
-	if !ok {
-		ctx.JSON(http.StatusInternalServerError, gin.H{
-			"message": "用户数据类型错误",
-		})
+	user := database.GetUserById(uid)
+	if user == nil {
+		ctx.JSON(http.StatusUnauthorized, gin.H{"message": "未登录"})
 		return
 	}
 
-	// 返回当前用户的 Name
-	ctx.JSON(http.StatusOK, gin.H{
-		"Name": currentUser.Name,
-	})
+	ctx.JSON(http.StatusOK, gin.H{"Name": user.Name})
 }

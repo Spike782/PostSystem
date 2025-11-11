@@ -7,11 +7,12 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"gorm.io/gorm"
 	"log/slog"
+	"strings"
 )
 
 // 注册新用户。password是md5之后的密码
-func RegistUser(name string, password string) (int, error) {
-	user := new(model.User)
+func RegisterUser(name string, password string) (int, error) {
+	user := new(model.Users)
 	user.Name = name
 	user.PassWord = password
 	err := PostDB.Create(user).Error
@@ -30,7 +31,7 @@ func RegistUser(name string, password string) (int, error) {
 
 // 注销用户
 func LogOffUser(uid int) error {
-	tx := PostDB.Delete(&model.User{Id: uid})
+	tx := PostDB.Delete(&model.Users{Id: uid})
 	if tx.Error != nil {
 		slog.Error("注销用户失败", "uid", uid, "error", tx.Error)
 		return errors.New("用户注销失败，请稍后重试")
@@ -42,7 +43,7 @@ func LogOffUser(uid int) error {
 }
 
 func UpdatePassword(uid int, oldPass, newPass string) error {
-	tx := PostDB.Model(&model.User{}).Where("id=? and password=?", uid, oldPass).Update("password", newPass)
+	tx := PostDB.Model(&model.Users{}).Where("id=? and password=?", uid, oldPass).Update("password", newPass)
 	if tx.Error != nil {
 		slog.Error("Update password failed", "id:%d", uid, "error", tx.Error)
 		return errors.New("密码修改失败，请稍后重试")
@@ -54,9 +55,10 @@ func UpdatePassword(uid int, oldPass, newPass string) error {
 	}
 }
 
-func GetUserById(uid int) *model.User {
-	user := model.User{Id: uid}
-	tx := PostDB.Select("*").First(&user)
+func GetUserById(uid int) *model.Users {
+	var user model.Users
+	// 显式指定查询条件：WHERE id = ?
+	tx := PostDB.Where("id = ?", uid).First(&user)
 	if tx.Error != nil {
 		if !errors.Is(tx.Error, gorm.ErrRecordNotFound) {
 			slog.Error("GetUserById failed", "uid", uid, "error", tx.Error)
@@ -66,14 +68,23 @@ func GetUserById(uid int) *model.User {
 	return &user
 }
 
-func GetUserByName(name string) *model.User {
-	user := model.User{Name: name}
-	tx := PostDB.Select("*").First(&user)
+func GetUserByName(name string) *model.Users {
+	name = strings.TrimSpace(name)
+	if name == "" {
+		slog.Warn("GetUserByName: empty name")
+		return nil
+	}
+
+	var user model.Users
+	// 显式指定查询条件：WHERE name = ?
+	tx := PostDB.Where("name = ?", name).First(&user)
 	if tx.Error != nil {
 		if !errors.Is(tx.Error, gorm.ErrRecordNotFound) {
-			slog.Error("GetUserByName failed", "name:", name, "error", tx.Error)
+			slog.Error("GetUserByName failed", "name", name, "error", tx.Error)
 		}
 		return nil
 	}
+
+	slog.Info("查询结果", "id", user.Id, "name", user.Name)
 	return &user
 }

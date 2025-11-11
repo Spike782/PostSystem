@@ -41,10 +41,9 @@ func CreateConnection(confDir, confFile, fileType, logDir string) {
 		},
 	)
 	db, err := gorm.Open(mysql.Open(DataSourceName), &gorm.Config{
-		PrepareStmt:            true, //执行任何SQL时都会创建一个prepared statement并将其缓存，以提高后续的效率
-		SkipDefaultTransaction: true, // 为了确保数据一致性，GORM 会在事务里执行写入操作（创建、更新、删除）。如果没有这方面的要求，您可以在初始化时禁用它，这将获得大约 30%+ 性能提升。
-		NamingStrategy: schema.NamingStrategy{ //覆盖默认的NamingStrategy来更改命名约定
-			SingularTable: true, //表名映射时不加复数，仅是驼峰-->蛇形
+		PrepareStmt:            true,                  //执行任何SQL时都会创建一个prepared statement并将其缓存，以提高后续的效率
+		SkipDefaultTransaction: true,                  // 为了确保数据一致性，GORM 会在事务里执行写入操作（创建、更新、删除）。如果没有这方面的要求，您可以在初始化时禁用它，这将获得大约 30%+ 性能提升。
+		NamingStrategy:         schema.NamingStrategy{ //覆盖默认的NamingStrategy来更改命名约定
 		},
 		Logger: newLogger, //日志控制
 	})

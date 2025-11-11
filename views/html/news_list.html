@@ -33,7 +33,7 @@
                 </tr>
                 {{range .data}}
                 <tr>
-                    <td style="padding-top: 10;"><a href="/news/{{.Id}}">{{.Title}}</a></td>
+                    <td style="padding-top: 10;"><a href="/{{.Id}}">{{.Title}}</a></td>
                     <td>{{.UserName}}</td>
                     <td>{{.ViewPostTime}}</td>
                 </tr>
@@ -69,16 +69,17 @@
 
     // 发布新闻
     function issueNews() {
-        window.location.href = "/news/issue";
+        window.location.href = "/issue";
     }
 
     // 退出登录
     function logout() {
         $.ajax({
-            url: "/logout",
+            url: "/logout/submit",
             method: "GET",
             success: function (result) {
-                show_login();  // 注销后调用显示登录函数
+                // 注销后刷新页面以更新登录状态
+                window.location.reload();
             }
         });
     };
@@ -90,13 +91,17 @@
             method: "GET",
             success: function (result) {
                 if (result.Name) {  // 如果用户已登录
-                    show_out(result.Name);  // 显示用户名
                     // 显示“发布新闻”按钮和“退出”按钮
                     document.querySelector("#issue_bnt").style.display = "inline";
                     document.querySelector("#user_name").innerText = result.Name;
                     document.querySelector("#user_name").style.display = "inline";
                     document.querySelector("#login").style.display = "none";
                     document.querySelector("#log_out").style.display = "inline";
+                } else {
+                    document.querySelector("#login").style.display = "inline";
+                    document.querySelector("#user_name").style.display = "none";
+                    document.querySelector("#log_out").style.display = "none";
+                    document.querySelector("#issue_bnt").style.display = "none";
                 }
             },
             fail: function () {

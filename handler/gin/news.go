@@ -123,16 +123,23 @@ func NewsList(ctx *gin.Context) {
 
 // 从jwt里解析出uid，判断news id是否属于uid
 func NewsBelong(ctx *gin.Context) {
-	newsId := ctx.Query("id") //新闻id
+	newsId := ctx.Query("id")
 	nid, err := strconv.Atoi(newsId)
 	if err != nil {
 		ctx.String(http.StatusBadRequest, "invalid news id")
 		return
 	}
 
-	loginUid := GetLoginUid(ctx)
+	// 关键修复：用 ctx.Value(UID_IN_CTX) 获取 uid，和其他接口保持一致
+	loginUid, ok := ctx.Value(UID_IN_CTX).(int)
+	if !ok || loginUid <= 0 {
+		// 未获取到有效 uid（未登录或解析失败），返回 false
+		ctx.String(http.StatusOK, "false")
+		return
+	}
+
 	if newsBelongUser(nid, loginUid) {
-		ctx.String(http.StatusOK, "true") //新闻的作者id就是当前登录者的uid
+		ctx.String(http.StatusOK, "true")
 	} else {
 		ctx.String(http.StatusOK, "false")
 	}

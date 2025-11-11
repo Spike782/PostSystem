@@ -25,7 +25,7 @@
                 </tr>
                 <tr>
                     <td>密码</td>
-                    <td><input id="password" name="pass" type="password" size="20" /></td>
+                    <td><input id="password" name="password" type="password" size="20" /></td>
                 </tr>
                 <tr>
                     <td align="center"><button type="submit">登录 </button> </td>
@@ -42,10 +42,10 @@
                 const form = document.querySelector("#loginForm");
                 var formData = new FormData(form);
                 formData.set("name", $.trim(formData.get("name"))); //把前后的空格去掉
-                var pass = $.trim(formData.get("pass"));   //取得用户输入的原始密码
+                var pass = $.trim(formData.get("password"));   //取得用户输入的原始密码
                 var digest = CryptoJS.MD5(pass).toString(CryptoJS.enc.Hex);//直接在客户端对密码执行哈希
-                formData.delete("pass");
                 formData.set("password", digest);
+                formData.set("password", digest); // 覆盖原始明文密码为加密后的值
                 $.ajax({
                     url: "/login/submit",
                     data: formData,
