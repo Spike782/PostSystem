@@ -1,168 +1,169 @@
 <html lang="en">
-
 <head>
     <meta charset="utf-8" />
     <script src="http://code.jquery.com/jquery-latest.js"></script>
-    <script src="/js/my.js"></script>
-    <link rel="stylesheet" type="text/css" href="/css/my.css">
     <title>{{.Title}}</title>
+    <link rel="stylesheet" href="/css/main.css">
 </head>
-
 <body>
-    <span style="position: absolute;left: 2%;">
-        <a id="delete_bnt" style="display: none;" onclick="deleteNews();">删除</a>
-        <a id="edit_bnt" style="display: none;" onclick="edit();">修改</a>
-        <a href="/news">返回列表页</a>
-    </span>
-
-    <span style="position: absolute;right: 2%;">
-        <a href="/login" id="login">登录</a>
-        <a href="/modify_pass" onclick="" id="user_name"></a>
-        <a id="log_out" style="display: none;" onclick="logout();">退出</a>
-    </span>
-
-    <span style="display: none;"><input id="id" value="{{.Id}}"></input></span>
-    <div id="view" align="center" style="display: block; width: 50%; margin: auto;">
-        <span id="title" style="width: 100%;">{{.Title}}</span><br>
-        <hr><br>
-        <div id="article" style="white-space: pre-wrap; text-align: left;">{{.Content}}</div><!-- 这个style是为了把\n转为换行 -->
-        <br>{{.UserName}}&nbsp;创建于&nbsp;{{.ViewPostTime}}
+<div class="page-shell">
+    <div class="toolbar">
+        <div class="actions">
+            <a id="delete_bnt" class="btn btn-ghost" style="display: none;" onclick="deleteNews();">删除</a>
+            <a id="edit_bnt" class="btn btn-primary" style="display: none;" onclick="edit();">编辑</a>
+            <a href="/news" class="btn btn-ghost">返回列表</a>
+        </div>
+        <div>
+            <a href="/login" id="login" class="btn btn-ghost">登录</a>
+            <a href="/modify_pass" id="user_name" class="pill" style="display: none;"></a>
+            <a id="log_out" class="btn btn-ghost" style="display: none;" onclick="logout();">退出</a>
+        </div>
     </div>
-    <div id="update" align="center" style="display: none; width: 50%; margin: auto;">
-        <input type="text" id="edit_title" style="width: 100%;" name="edit_title" value="{{.Title}}"></input><br>
-        <hr><br>
-        <textarea id="edit_article" name="edit_article" rows="15" style="width: 100%;">{{.Content}}</textarea><br><br>
-        <button id="update_bnt" onclick="update();">提交</button><br>
-        <span id="msg" style="color: red;"></span>
+
+    <div id="view" class="card" style="display: block;">
+        <div id="title" class="hero-title">{{.Title}}</div>
+        <div class="news-meta">
+            <span>作者：{{.UserName}}</span>
+            <span>发布时间：{{.ViewPostTime}}</span>
+        </div>
+        <div id="article" class="content-box">{{.Content}}</div>
     </div>
-    <script>
-        // 编辑切换
-        function edit() {
-            $("#view").hide();
-            $("#update").show();
-            $("#msg").html(""); // 清空之前的提示
-        }
-        
-        function deleteNews() {
-            var id = document.querySelector("#id").value;
-            if (!confirm("确定要删除这篇新闻吗？删除后不可恢复！")) {
-                return;
+    <div id="update" class="card" style="display: none;">
+        <div class="hero-title">编辑新闻</div>
+        <div class="form">
+            <div>
+                <label for="edit_title">标题</label>
+                <input type="text" id="edit_title" value="{{.Title}}">
+            </div>
+            <div>
+                <label for="edit_article">内容</label>
+                <textarea id="edit_article" rows="12">{{.Content}}</textarea>
+            </div>
+            <button id="update_bnt" class="btn btn-primary" onclick="update();">提交修改</button>
+            <div id="msg" class="message"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. 编辑切换
+    function edit() {
+        $("#view").hide();
+        $("#update").show();
+        $("#msg").html("");
+    }
+
+    // 2. 删除新闻
+    function deleteNews() {
+        // 从URL提取新闻ID（如 /news/4 → id=4）
+        const newsId = window.location.pathname.split("/").pop();
+        if (!confirm("确定删除这篇新闻吗？")) return;
+
+        $.ajax({
+            type: "DELETE",
+            url: "/news/delete/" + newsId,
+            xhrFields: { withCredentials: true },
+            success: function () {
+                window.location.replace("/news");
+            },
+            error: function (xhr) {
+                alert(xhr.responseText || "删除失败");
             }
-            $.ajax({
-                type: "DELETE",
-                url: "/news/delete/" + id,
-                xhrFields: { withCredentials: true },
-                timeout: 3000,
-                success: function (result) {
-                    window.location.replace("/news");
-                },
-                error: function (xhr) {
-                    alert(xhr.responseText || "删除失败，请重试！");
-                }
-            });
-        }
-
-        // 修改提交（加校验+超时处理）
-        function update() {
-            var title = document.querySelector("#edit_title").value.trim();
-            var article = document.querySelector("#edit_article").value.trim();
-            var id = document.querySelector("#id").value;
-            if (!title) {
-                $('#msg').html("标题不能为空！");
-                return;
-            }
-            if (!article) {
-                $('#msg').html("内容不能为空！");
-                return;
-            }
-            $.ajax({
-                type: "POST",
-                url: "/news/update",
-                data: { "title": title, "content": article, "id": id },
-                xhrFields: { withCredentials: true },
-                timeout: 5000,
-                success: function (result) {
-                    window.location.replace("/news/" + id);
-                },
-                error: function (xhr, status) {
-                    if (status === "timeout") {
-                        $('#msg').html("网络超时，请重试！");
-                    } else {
-                        $('#msg').html(xhr.responseText || "修改失败！");
-                    }
-                }
-            });
-        }
-
-        // 退出登录（加登录态携带）
-        function logout() {
-            $.ajax({
-                url: "/logout",
-                method: "get",
-                xhrFields: { withCredentials: true },
-                timeout: 3000,
-                success: function (result) {
-                    show_login();
-                },
-                error: function () {
-                    alert("退出失败，请重试！");
-                }
-            });
-        }
-
-        // 补充状态切换函数
-        function show_login() {
-            $("#login").show();
-            $("#user_name").hide();
-            $("#log_out").hide();
-            $("#user_name").html("");
-        }
-        function show_out(name) {
-            $("#login").hide();
-            $("#user_name").show();
-            $("#log_out").show();
-            $("#user_name").html(name);
-        }
-
-        // 页面加载逻辑（补全登录态携带和错误处理）
-        $(document).ready(function () {
-            var id = document.querySelector("#id").value;
-            // 权限判断请求
-            $.ajax({
-                type: "GET",
-                url: "/news/belong",
-                data: { "id": id },
-                xhrFields: { withCredentials: true },
-                timeout: 3000,
-                success: function (result) {
-                    if (result === true || result === "true") {
-                        $("#edit_bnt").show();
-                        $("#delete_bnt").show();
-                    }
-                },
-                fail: function () {
-                    $("#edit_bnt").hide();
-                    $("#delete_bnt").hide();
-                }
-            });
-
-            // 登录状态查询请求
-            $.ajax({
-                url: "/user",
-                method: "get",
-                xhrFields: { withCredentials: true },
-                timeout: 3000,
-                success: function (result) {
-                    if (result.Name) {
-                        show_out(result.Name);
-                    } else {
-                        show_login();
-                    }
-                },
-                error: function () {
-                    show_login();
-                }
-            });
         });
-    </script>
+    }
+
+    // 3. 修改新闻
+    function update() {
+        const title = $("#edit_title").val().trim();
+        const content = $("#edit_article").val().trim();
+        const newsId = window.location.pathname.split("/").pop();
+
+        // 表单校验
+        if (!title) {
+            $("#msg").html("标题不能为空");
+            return;
+        }
+        if (!content) {
+            $("#msg").html("内容不能为空");
+            return;
+        }
+
+        $.ajax({
+            type: "POST",
+            url: "/news/update",
+            data: { "title": title, "content": content, "id": newsId },
+            xhrFields: { withCredentials: true }, // 携带登录态
+            success: function () {
+                window.location.replace("/news/" + newsId);
+            },
+            error: function (xhr) {
+                $("#msg").html(xhr.responseText || "修改失败");
+            }
+        });
+    }
+
+    // 4. 退出登录
+    function logout() {
+        $.ajax({
+            url: "/logout/submit",
+            method: "GET",
+            xhrFields: { withCredentials: true },
+            success: function () {
+                show_login();
+                window.location.reload();
+            }
+        });
+    }
+
+    // 5. 登录/退出状态切换
+    function show_login() {
+        $("#login").show();
+        $("#user_name").hide();
+        $("#log_out").hide();
+    }
+    function show_out(name) {
+        $("#login").hide();
+        $("#user_name").show().html(name);
+        $("#log_out").show();
+    }
+
+    // 6. 页面加载时：校验权限（显示删除/修改按钮）+ 显示登录状态
+    $(document).ready(function () {
+        // 提取当前新闻ID
+        const newsId = window.location.pathname.split("/").pop();
+
+        // 6.1 权限校验：调用 /news/belong 接口
+        $.ajax({
+            type: "GET",
+            url: "/news/belong",
+            data: { "id": newsId }, // 传递新闻ID
+            xhrFields: { withCredentials: true }, // 必须携带登录态
+            success: function (result) {
+                // 后端返回 "true" 则显示按钮
+                if (result === "true") {
+                    $("#edit_bnt").show();
+                    $("#delete_bnt").show();
+                }
+            },
+            error: function (xhr) {
+                console.log("权限校验失败：", xhr.responseText);
+            }
+        });
+
+        // 6.2 显示登录状态
+        $.ajax({
+            url: "/user",
+            method: "GET",
+            xhrFields: { withCredentials: true },
+            success: function (result) {
+                if (result.Name) {
+                    show_out(result.Name);
+                } else {
+                    show_login();
+                }
+            }
+        });
+    });
+</script>
 </body>
+</html>

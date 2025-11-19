@@ -44,8 +44,7 @@ func Login(ctx *gin.Context) {
 		ctx.String(http.StatusBadRequest, "密码错误")
 		return
 	}
-	slog.Info("前端传入的用户名", "name", user.Name)
-	slog.Info("登录用户ID", "id", user2.Id, "name", user2.Name)
+
 	ctx.Set("user", user2)
 	//返回cookie
 	header := util.DefautHeader
@@ -59,13 +58,12 @@ func Login(ctx *gin.Context) {
 		slog.Error("生成token失败", "error", err)
 		ctx.String(http.StatusInternalServerError, "token生成失败")
 	} else {
-		//response header里会有一条 Set-Cookie: jwt=xxx; other_key=other_value，浏览器后续请求会自动把同域名下的cookie再放到request header里来，即request header里会有一条Cookie: jwt=xxx; other_key=other_value
 		ctx.SetCookie(
 			COOKIE_NAME,
-			token,       //注意：受cookie本身的限制，这里的token不能超过4K
-			COOKIE_LIFE, //maxAge，cookie的有效时间，时间单位秒。如果不设置过期时间，默认情况下关闭浏览器后cookie被删除
+			token,       //受cookie本身的限制，这里的token不能超过4K
+			COOKIE_LIFE, //cookie的有效时间
 			"/",         //path，cookie存放目录
-			"localhost", //cookie从属的域名,不区分协议和端口。如果不指定domain则默认为本host(如b.a.com)，如果指定的domain是一级域名(如a.com)，则二级域名(b.a.com)下也可以访问。访问登录页面时必须用http://localhost:5678/login，而不能用http://127.0.0.1:5678/login，否则浏览器不会保存这个cookie
+			"localhost",
 			false,       //是否只能通过https访问
 			true,        //设为false,允许js修改这个cookie（把它设为过期）,js就可以实现logout。如果为true，则需要由后端来重置过期时间
 		)

@@ -21,7 +21,7 @@ func hash(pass string) string {
 }
 
 func TestRegistUser(t *testing.T) {
-	uid, err := RegistUser("xiaoming", hash("123456"))
+	uid, err := RegisterUser("xiaoming", hash("123456"))
 	if err != nil {
 		t.Fatal(err)
 	} else {

@@ -41,7 +41,8 @@ func DeleteNews(id int) error {
 }
 
 func UpdateNews(id int, title, content string) error {
-	tx := PostDB.Model(&model.News{}).Where("id=? and delete_time is null", id).Updates(map[string]any{"title": title, "content": content})
+	tx := PostDB.Model(&model.News{}).Where("id=? and delete_time is null", id).
+		Updates(map[string]any{"title": title, "article": content})
 	if tx.Error != nil {
 		slog.Error("update news error", "id", id, "error", tx.Error)
 		return errors.New("新闻修改失败，请稍后重试")

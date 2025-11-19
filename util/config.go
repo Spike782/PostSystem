@@ -9,9 +9,7 @@ import (
 
 // FileType
 const (
-	JSON = "json"
 	YAML = "yaml"
-	ENV  = "env"
 )
 
 // Viper可以解析JSON、TOML、YAML、HCL、INI、ENV等格式的配置文件。甚至可以监听配置文件的变化(WatchConfig)，不需要重启程序就可以读到最新的值。

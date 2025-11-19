@@ -2,22 +2,29 @@ package handler
 
 import (
 	database "PostSystem/database/gorm"
-	"PostSystem/database/model"
+	handlerModel "PostSystem/handler/model"
 	"PostSystem/util"
-	"github.com/gin-gonic/gin"
 	"log/slog"
 	"net/http"
 	"strconv"
+
+	"github.com/gin-gonic/gin"
 )
 
 func PostNews(ctx *gin.Context) {
-	loginUid := ctx.Value(UID_IN_CTX).(int)
-	var news model.News
+	loginUid := GetLoginUid(ctx)
+	if loginUid <= 0 {
+		ctx.String(http.StatusForbidden, "请先登录")
+		return
+	}
+	var news handlerModel.News
 	err := ctx.ShouldBind(&news)
 	if err != nil {
 		ctx.String(http.StatusBadRequest, util.BindErrMsg(err))
 		return
 	}
+	slog.Info("接收到的新闻参数", "title", news.Title, "content", news.Content, "loginUid", loginUid)
+
 	id, err := database.PostNews(loginUid, news.Title, news.Content)
 	if err != nil {
 		ctx.String(http.StatusInternalServerError, err.Error())
@@ -50,7 +57,11 @@ func GetNewsById(ctx *gin.Context) {
 
 // 删除新闻
 func DeleteNews(ctx *gin.Context) {
-	loginUid := ctx.Value(UID_IN_CTX).(int)
+	loginUid := GetLoginUid(ctx)
+	if loginUid <= 0 {
+		ctx.String(http.StatusForbidden, "请先登录")
+		return
+	}
 	idStr := ctx.Param("id")
 	if id, err := strconv.Atoi(idStr); err != nil || id <= 0 {
 		ctx.String(http.StatusBadRequest, "非法的新闻id")
@@ -71,8 +82,12 @@ func DeleteNews(ctx *gin.Context) {
 
 // 修改新闻
 func UpdateNews(ctx *gin.Context) {
-	loginUid := ctx.Value(UID_IN_CTX).(int)
-	var news model.News
+	loginUid := GetLoginUid(ctx)
+	if loginUid <= 0 {
+		ctx.String(http.StatusForbidden, "请先登录")
+		return
+	}
+	var news handlerModel.News
 	err := ctx.ShouldBind(&news)
 	if err != nil {
 		ctx.String(http.StatusBadRequest, util.BindErrMsg(err))
@@ -130,9 +145,8 @@ func NewsBelong(ctx *gin.Context) {
 		return
 	}
 
-	// 关键修复：用 ctx.Value(UID_IN_CTX) 获取 uid，和其他接口保持一致
-	loginUid, ok := ctx.Value(UID_IN_CTX).(int)
-	if !ok || loginUid <= 0 {
+	loginUid := GetLoginUid(ctx)
+	if loginUid <= 0 {
 		// 未获取到有效 uid（未登录或解析失败），返回 false
 		ctx.String(http.StatusOK, "false")
 		return

@@ -5,35 +5,30 @@
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/md5.js"></script>
     <title>注册</title>
-    <style>
-        .center {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-    </style>
+    <link rel="stylesheet" href="/css/main.css">
 </head>
 
 <body>
-    <div class="center">
-        <form id="registForm">
-            <table>
-                <tr>
-                    <td>用户名</td>
-                    <td><input id="user" name="name" type="text" size="20" autofocus /></td>
-                </tr>
-                <tr>
-                    <td>密码</td>
-                    <td><input id="pass" name="pass" type="password" size="20" /></td>
-                </tr>
-                <tr>
-                    <td align="center"><button type="submit">注册 </button> </td>
-                    <td align="right"><a href="/login">去登录</a></td>
-                </tr>
-            </table>
-        </form>
-        <span id="msg" style="color: red;"></span>
+    <div class="page-shell">
+        <div class="card center-card">
+            <div class="hero-title">创建你的账号</div>
+            <div class="hero-subtitle">加入 PostSystem，开始发布观点</div>
+            <form id="registForm" class="form">
+                <div>
+                    <label for="user">用户名</label>
+                    <input id="user" name="name" type="text" placeholder="设置用户名" autofocus />
+                </div>
+                <div>
+                    <label for="pass">密码</label>
+                    <input id="pass" name="pass" type="password" placeholder="设置密码" />
+                </div>
+                <button class="btn btn-primary" type="submit">注册并登录</button>
+            </form>
+            <div class="message" id="msg"></div>
+            <div style="margin-top: 12px; text-align: center;">
+                已有账号？<a href="/login">返回登录</a>
+            </div>
+        </div>
     </div>
     <script>
         $(document).ready(function () {
@@ -47,7 +42,7 @@
                 formData.delete("pass");
                 formData.set("password", digest);
                 $.ajax({
-                    url: "/regist/submit",
+                    url: "/register/submit",
                     data: formData,
                     method: 'post',
                     processData: false,

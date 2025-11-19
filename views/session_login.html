@@ -4,38 +4,28 @@
     <meta charset="utf-8" />
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/md5.js"></script>
-    <title>登录</title>
-    <style>
-        .center {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-    </style>
+    <title>Session 登录</title>
+    <link rel="stylesheet" href="/css/main.css">
 </head>
 
 <body>
-    <div class="center">
-        <form id="loginForm">
-            <table>
-                <tr>
-                    <td align="center" colspan="2" style="font-size: larger;">基于Session的登录</td>
-                </tr>
-                <tr>
-                    <td>用户名</td>
-                    <td><input id="user" name="name" type="text" size="20" autofocus /></td>
-                </tr>
-                <tr>
-                    <td>密码</td>
-                    <td><input id="pass" name="pass" type="password" size="20" /></td>
-                </tr>
-                <tr>
-                    <td align="center" colspan="2"><button type="submit">登录 </button> </td>
-                </tr>
-            </table>
-        </form>
-        <span id="msg" style="color: red;"></span>
+    <div class="page-shell">
+        <div class="card center-card">
+            <div class="hero-title">基于 Session 的登录</div>
+            <div class="hero-subtitle">示例：传统 Session 登录体验</div>
+            <form id="loginForm" class="form">
+                <div>
+                    <label for="user">用户名</label>
+                    <input id="user" name="name" type="text" placeholder="输入用户名" autofocus />
+                </div>
+                <div>
+                    <label for="pass">密码</label>
+                    <input id="pass" name="pass" type="password" placeholder="输入密码" />
+                </div>
+                <button class="btn btn-primary" type="submit">登录</button>
+            </form>
+            <div class="message" id="msg"></div>
+        </div>
     </div>
     <script>
         $(document).ready(function () {
@@ -55,8 +45,7 @@
                     contentType: false,
                     enctype: 'multipart/form-data',
                     success: function (result) {
-                        // 重定向
-                        window.location.href = "/page1";
+                        window.location.href = "/news";
                     }
                 }).fail(function (result, result1, result2) {
                     $('#msg').html(result.responseText);

@@ -5,36 +5,31 @@
     <script src="http://code.jquery.com/jquery-latest.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/3.1.2/rollups/md5.js"></script>
     <title>修改密码</title>
-    <style>
-        .center {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-        }
-    </style>
+    <link rel="stylesheet" href="/css/main.css">
 </head>
 
 <body>
-    <span id="user_name" style="position: absolute;right: 2%;"></span>
-    <div class="center">
-        <form id="updatePassForm">
-            <table>
-                <tr>
-                    <td>旧密码</td>
-                    <td><input id="old_pass" name="old_pass" type="password" size="20" /></td>
-                </tr>
-                <tr>
-                    <td>新密码</td>
-                    <td><input id="new_pass" name="new_pass" type="password" size="20" /></td>
-                </tr>
-                <tr>
-                    <td align="center"><button type="submit">修改密码</button> </td>
-                    <td align="right"><a href="/login">去登录</a></td>
-                </tr>
-            </table>
-        </form>
-        <span id="msg" style="color: red;"></span>
+    <div class="page-shell">
+        <div class="toolbar">
+            <span id="user_name" class="pill"></span>
+            <a href="/news" class="btn btn-ghost">返回首页</a>
+        </div>
+        <div class="card center-card" style="width: min(520px, 95%);">
+            <div class="hero-title">修改密码</div>
+            <div class="hero-subtitle">为了账户安全，建议定期更新密码</div>
+            <form id="updatePassForm" class="form">
+                <div>
+                    <label for="old_pass">旧密码</label>
+                    <input id="old_pass" name="old_pass" type="password" placeholder="请输入当前密码" />
+                </div>
+                <div>
+                    <label for="new_pass">新密码</label>
+                    <input id="new_pass" name="new_pass" type="password" placeholder="设置新密码" />
+                </div>
+                <button class="btn btn-primary" type="submit">保存修改</button>
+            </form>
+            <div class="message" id="msg"></div>
+        </div>
     </div>
     <script>
         $(document).ready(function () {

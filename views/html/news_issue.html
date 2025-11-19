@@ -3,29 +3,39 @@
 <head>
     <meta charset="utf-8" />
     <script src="http://code.jquery.com/jquery-latest.js"></script>
-    <script src="/js/my.js"></script>
-    <link rel="stylesheet" type="text/css" href="/css/my.css">
     <title>发布新闻</title>
+    <link rel="stylesheet" href="/css/main.css">
 </head>
 
 <body>
-    <span style="position: absolute;right: 2%;">
-        <a href="/login" id="login">登录</a>
-        <a href="/modify_pass" onclick="" id="user_name"></a>
-        <a id="log_out" style="display: none;" onclick="logout();">退出</a>
-    </span>
+    <div class="page-shell">
+        <div class="toolbar">
+            <a href="/login" id="login" class="btn btn-ghost">登录</a>
+            <a href="/modify_pass" id="user_name" class="pill" style="display: none;"></a>
+            <a id="log_out" class="btn btn-ghost" style="display: none;" onclick="logout();">退出</a>
+        </div>
 
-    <div align="center" style="width: 50%; margin: auto;">
-        <input type="text" id="issue_title" style="width: 100%;" name="issue_title" value=""></input><br>
-        <hr><br>
-        <textarea id="issue_article" name="issue_article" rows="15" style="width: 100%;"></textarea><br><br>
-        <button id="issue_bnt" onclick="issue();">提交</button><br>
-        <span id="msg" style="color: red;"></span>
+        <div class="card">
+            <div class="hero-title">发布一条新资讯</div>
+            <div class="hero-subtitle">分享你对热点的见解，让更多人看到</div>
+            <div class="form">
+                <div>
+                    <label for="issue_title">标题</label>
+                    <input type="text" id="issue_title" name="issue_title" placeholder="一句话概括这条新闻">
+                </div>
+                <div>
+                    <label for="issue_article">内容</label>
+                    <textarea id="issue_article" name="issue_article" rows="12" placeholder="输入完整正文..."></textarea>
+                </div>
+                <button id="issue_bnt" class="btn btn-primary" onclick="issue();">提交发布</button>
+                <div class="message" id="msg"></div>
+            </div>
+        </div>
     </div>
     <script>
         function issue() {
-            var title = document.querySelector("#issue_title").value.trim();
-            var article = document.querySelector("#issue_article").value.trim();
+            const title = $("#issue_title").val().trim();
+            const article = $("#issue_article").val().trim();
             // 表单校验
             if (!title) {
                 $('#msg').html("标题不能为空！");
@@ -56,8 +66,8 @@
 
         function logout() {
             $.ajax({
-                url: "/logout",
-                method: "get",
+                url: "/logout/submit",
+                method: "GET",
                 xhrFields: { withCredentials: true },
                 timeout: 3000,
                 success: function (result) {

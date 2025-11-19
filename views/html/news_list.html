@@ -2,53 +2,48 @@
 <head>
     <meta charset="utf-8" />
     <script src="http://code.jquery.com/jquery-latest.js"></script>
-    <script src="/js/my.js"></script>
-    <link rel="stylesheet" type="text/css" href="/css/my.css">
     <title>新闻</title>
+    <link rel="stylesheet" href="/css/main.css">
 </head>
 
 <body>
-<!-- 显示发布新闻按钮，初始时隐藏 -->
-<span style="position: absolute;left: 2%;">
-        <a id="issue_bnt" style="display: none;" onclick="issueNews();">发表</a>
-    </span>
+<div class="page-shell">
+    <div class="toolbar">
+        <a id="issue_bnt" class="btn btn-primary" style="display: none;" onclick="issueNews();">发布新闻</a>
+        <a href="/login" id="login" class="btn btn-ghost" style="display: none;">登录</a>
+        <a href="/modify_pass" id="user_name" class="pill" style="display: none;"></a>
+        <a id="log_out" class="btn btn-ghost" style="display: none;" onclick="logout();">退出</a>
+    </div>
 
-<!-- 右上角用户信息 -->
-<span style="position: absolute;right: 2%;">
-        <a href="/login" id="login" style="display: none;">登录</a>
-        <a href="/modify_pass" onclick="" id="user_name" style="display: none;"></a> <!-- 用户名 -->
-        <a id="log_out" style="display: none;" onclick="logout();">退出</a>
-    </span>
-
-<span style="display: none;"><input id="page_no" value="{{.page}}"></input></span>
-
-<!-- 新闻列表展示 -->
-<div align="center" style="display: block; width: 80%; margin: auto;">
-        <span id="list">
-            <table>
-                <tr bgcolor="#FA9862">
-                    <th width="50%">标题</th>
-                    <th width="20%">作者</th>
-                    <th width="30%">发布时间</th>
-                </tr>
-                {{range .data}}
-                <tr>
-                    <td style="padding-top: 10;"><a href="/{{.Id}}">{{.Title}}</a></td>
-                    <td>{{.UserName}}</td>
-                    <td>{{.ViewPostTime}}</td>
-                </tr>
-                {{end}}
-                <tr>
-                    <td colspan="2" align="right">
-                        <a onclick="prev_page();">&lt;</a>
-                        {{.page}}
-                        <a onclick="next_page();">&gt;</a>
-                    </td>
-                    <td align="right">共{{.total}}篇</td>
-                </tr>
-            </table>
-        </span>
+    <div class="card">
+        <div class="hero-title">今日热点</div>
+        <div class="hero-subtitle">实时掌握最新资讯，随时分享你的观点</div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>标题</th>
+                <th>作者</th>
+                <th>发布时间</th>
+            </tr>
+            </thead>
+            <tbody>
+            {{range .data}}
+            <tr>
+                <td><a href="/news/{{.Id}}">{{.Title}}</a></td>
+                <td>{{.UserName}}</td>
+                <td>{{.ViewPostTime}}</td>
+            </tr>
+            {{end}}
+            </tbody>
+        </table>
+        <div class="pagination">
+            <button onclick="prev_page();">上一页</button>
+            <div>第 {{.page}} 页 · 共 {{.total}} 篇</div>
+            <button onclick="next_page();">下一页</button>
+        </div>
+    </div>
 </div>
+<span style="display: none;"><input id="page_no" value="{{.page}}"></input></span>
 
 <script>
     // 下一页
@@ -69,7 +64,7 @@
 
     // 发布新闻
     function issueNews() {
-        window.location.href = "/issue";
+        window.location.href = "/news/issue";
     }
 
     // 退出登录
@@ -104,8 +99,8 @@
                     document.querySelector("#issue_bnt").style.display = "none";
                 }
             },
-            fail: function () {
-                // 未登录时显示登录按钮
+            error: function () {
+                // 未登录或请求异常时显示登录按钮
                 document.querySelector("#login").style.display = "inline";
                 document.querySelector("#user_name").style.display = "none";
                 document.querySelector("#log_out").style.display = "none";
